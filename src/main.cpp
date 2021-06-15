@@ -122,7 +122,7 @@ void loop()
 {
   Serial.println("Image update " + String(count));
 
-  load_png("http://10.10.10.10:80/intra/dumbdisplay/image.png");
+  load_png("http://10.1.0.10:80/intra/dumbdisplay/image.png");
 
   count++;
   delay(15000);
