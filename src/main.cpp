@@ -1,129 +1,102 @@
 #include <Arduino.h>
 
+#include "log.h"
+#include "const.h"
+
 // network
 #ifdef ESP32
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <ESPmDNS.h>
 #elif defined(ESP8266)
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
+#include <ESP8266mDNS.h>
+#include <FS.h>
 #endif
+
+#include <TimerCall.h>
 
 #include "_define_wifi.h"
 #include <math.h>
-#include "pngle.h"
 
-#include "SPI.h"
-#include "TFT_eSPI.h"
+#include "display.h"
+#include "httpserver.h"
 
-// Use hardware SPI
-TFT_eSPI tft = TFT_eSPI();
-
-WiFiClient client;
+TimerCall timer = TimerCall();
 
 int count = 0;
 
-void cls()
-{
-  tft.fillScreen(TFT_BLACK);
-
-  tft.setCursor(0, 0);
-  tft.setTextColor(TFT_WHITE);
-  tft.setTextSize(1);
+void mdns_announce() {
+  MDNS.announce();
+  mdnslog("mDNS Announced.");
 }
-
-double g_scale = 1.0;
-void pngle_on_draw(pngle_t *pngle, uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t rgba[4])
-{
-  uint16_t color = (rgba[0] << 8 & 0xf800) | (rgba[1] << 3 & 0x07e0) | (rgba[2] >> 3 & 0x001f);
-
-  if (rgba[3]) {
-    x = ceil(x * g_scale);
-    y = ceil(y * g_scale);
-    w = ceil(w * g_scale);
-    h = ceil(h * g_scale);
-    tft.fillRect(x, y, w, h, color);
-  }
-}
-
-void load_png(const char *url, double scale = 1.0)
-{
-  HTTPClient http;
-
-  http.begin(client, url);
-
-  int httpCode = http.GET();
-  if (httpCode != HTTP_CODE_OK) {
-    Serial.println("HTTP ERROR: " + String(httpCode));
-    http.end();
-    return;
-  }
-
-  Serial.println("HTTP OK: " + String(httpCode));
-  Serial.println("Start decoding");
-//   cls();
-
-  WiFiClient *stream = http.getStreamPtr();
-
-  pngle_t *pngle = pngle_new();
-  pngle_set_draw_callback(pngle, pngle_on_draw);
-  g_scale = scale; // XXX:
-
-  uint8_t buf[2048];
-  int remain = 0;
-  while (http.connected()) {
-    size_t size = stream->available();
-    if (!size) { delay(1); continue; }
-
-    if (size > sizeof(buf) - remain) {
-      size = sizeof(buf) - remain;
-    }
-
-    int len = stream->readBytes(buf + remain, size);
-    if (len > 0) {
-      int fed = pngle_feed(pngle, buf, remain + len);
-      if (fed < 0) {
-        cls();
-        tft.printf("ERROR: %s\n", pngle_error(pngle));
-        break;
-      }
-
-      remain = remain + len - fed;
-      if (remain > 0) memmove(buf, buf + fed, remain);
-    } else {
-      delay(1);
-    }
-  }
-
-  pngle_destroy(pngle);
-
-  http.end();
-}
-// ===================================================
 
 void setup()
 {
   Serial.begin(115200);
-  tft.begin();
-  tft.setRotation(1);
+  delay(100);
+  Serial.println("");
+  Serial.println("");
+  sectionlog("Start setup.");
 
-  tft.printf("Welcome.\n");
+  setup_tft();
+  draw_wifi_connecting_screen();
 
-  tft.printf("Connecting to wifi.\n");
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   while (WiFi.status() != WL_CONNECTED) {
     delay(100);
   }
 
-  tft.printf("WiFi connected.\n");
+  // SPIFFS
+  SPIFFS.begin();
+  mainlog("SPIFFS ready");
+
+  // mDNS
+  if (!MDNS.begin(MDNS_NAME)) {
+    mdnslog(F("Error setting up MDNS responder!"));
+  } else {
+    MDNS.setInstanceName("ESP dumb-display Ver." + VER +" " + String(MDNS_NAME));
+    MDNS.addService("http", "tcp", 80);
+    mdnslog("mDNS responder started");
+
+    mdns_announce();
+  }
+
+  // http
+  setup_http_server();
+
+  draw_ready_screen(WiFi.localIP().toString(), String(MDNS_NAME));
+
+  timer.add(mdns_announce, "MDNS_ANNO", 30000);
+  timer.start();
+
+  sectionlog("End setup.");
+  return;
+}
+
+void check_wifi_connection() {
+
+  if (WiFi.status() != WL_CONNECTED) {
+    wifilog(F("WiFi disconnected. restart WiFi"));
+    draw_wifi_connecting_screen();
+  } else {
+    return;
+  }
+
+  while (WiFi.status() != WL_CONNECTED) {
+    WiFi.disconnect();   
+    delay(300);
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    delay(300);
+  }
 }
 
 void loop()
 {
-  Serial.println("Image update " + String(count));
+  check_wifi_connection();
 
-  load_png("http://10.1.0.10:80/intra/dumbdisplay/image.png");
-
-  count++;
-  delay(15000);
+  MDNS.update();
+  loop_http_server();
+  timer.loop();
 }
