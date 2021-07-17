@@ -169,6 +169,11 @@ void draw_wifi_connecting_screen() {
 
 }
 
+void setDisplayBrightness(int brightness) {
+  // ILI9341 Backlight is controlled by PWM.
+  analogWrite(TFT_BL, brightness);
+}
+
 void setup_tft() {
   tft.begin();
   tft.setRotation(1);
@@ -183,4 +188,5 @@ void setup_tft() {
   // The decoder must be given the exact name of the rendering function above
   TJpgDec.setCallback(tft_output);
 
+  cls();
 }

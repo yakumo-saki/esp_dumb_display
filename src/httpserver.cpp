@@ -33,7 +33,9 @@ void handle_brightness() {
   debuglog("server arg brightness=" + brightnessStr);
   int brightness = brightnessStr.toInt();
 
-  String json = create_json(true, KEY, "");
+  setDisplayBrightness(brightness);
+
+  String json = create_json(true, KEY, "brightness = " + brightnessStr);
   server.send(200, "application/json", json);
 }
 
@@ -82,7 +84,51 @@ void handle_update_jpg() {
 
 
 void handle_get() {
-  String json = create_json(false, "GET_ROOT", "This is ESP DUMB DISPLAY ver" + VER);
+  String json = create_json(true, "GET_ROOT", "This is ESP DUMB DISPLAY ver" + VER);
+  server.send(200, "application/json", json);
+}
+
+void handle_beep_pc98() {
+  tone(BEEP_PIN, 2000, 100);
+  delay(100);
+  tone(BEEP_PIN, 1000, 100);
+  delay(100);
+}
+
+void handle_beep_warning() {
+  int longms = 200;
+  tone(BEEP_PIN, 2000, longms);
+  delay(longms);
+  delay(50);
+  tone(BEEP_PIN, 2000, longms);
+  delay(longms);
+  delay(50);
+  tone(BEEP_PIN, 2000, longms);
+  delay(longms);
+  delay(50);
+}
+
+void handle_beep() {
+  const String KEY = "type";
+  bool argExist = server.hasArg(KEY);
+  if (argExist == false) {
+    String json = create_json(false, KEY, "no type specified");
+    server.send(400, "application/json", json);
+    return;
+  }
+
+  String type = server.arg(KEY);
+
+  httplog("Start beep");
+  if (type == "pc98") {
+    handle_beep_pc98();
+  } else {
+    handle_beep_warning();
+  }
+  digitalWrite(BEEP_PIN, 0);
+  httplog("End   beep");
+
+  String json = create_json(true, "BEEP", "beep finished " + type);
   server.send(200, "application/json", json);
 }
 
@@ -92,6 +138,7 @@ void handle_get() {
 void setup_http_server() {
   httplog(F("HTTP web server initializing"));
   server.on("/api/brightness", HTTP_POST, handle_brightness);
+  server.on("/api/beep", HTTP_POST, handle_beep);
   server.on("/api/png", HTTP_POST, handle_update_png);
   server.on("/api/jpg", HTTP_POST, handle_update_jpg);
   server.on("/", HTTP_GET, handle_get);
