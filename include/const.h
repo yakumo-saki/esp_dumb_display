@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-const String VER = "0.9";
+const String VER = "0.91";
 
 const String RET_OK = "OK";
 

@@ -1,3 +1,4 @@
+#ifdef ESP8266
 #include <Arduino.h>
 
 #include "log.h"
@@ -10,14 +11,8 @@
 
 #include <TJpg_Decoder.h>
 
-// network
-#ifdef ESP32
-#include <WiFi.h>
-#include <HTTPClient.h>
-#elif defined(ESP8266)
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
-#endif
 
 WiFiClient client;
 
@@ -190,3 +185,4 @@ void setup_tft() {
 
   cls();
 }
+#endif

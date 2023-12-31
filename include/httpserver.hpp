@@ -2,6 +2,7 @@
 
 #ifdef ESP32
 #include <WebServer.h>
+extern WebServer server;
 typedef WebServer HTTPWEBSERVER;
 #endif
 

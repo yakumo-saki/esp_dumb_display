@@ -3,11 +3,24 @@
 #include "log.h"
 #include "const.h"
 
-#include "httpserver.h"
+#include "httpserver.hpp"
 #include "display.h"
-#include "webfetch.h"
+#include "webfetch.hpp"
+
+#ifdef ESP8266
+#include <ESP8266WebServer.h>
+typedef ESP8266WebServer HTTPWEBSERVER;
 
 HTTPWEBSERVER server(80);
+#endif
+
+
+#ifdef ESP32
+#include <WiFi.h>
+#include <WebServer.h>
+
+HTTPWEBSERVER server(80);
+#endif
 
 String create_json(bool success, String method, String reason) {
   String json = "{ ";
@@ -49,10 +62,11 @@ void handle_update_png() {
   }
 
   String url = server.arg(KEY);
-  String reason = load_png(url.c_str());
+  // String reason = load_png(url.c_str());
 
-  String json = create_json(true, KEY, reason);
-  server.send(200, "application/json", json);
+  //String json = create_json(true, KEY, reason);
+  String json = create_json(false, KEY, "Not implemented");
+  server.send(500, "application/json", json);
 }
 
 void handle_update_jpg() {

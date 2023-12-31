@@ -1,12 +1,10 @@
+#ifdef ESP8266
+
 #include <Arduino.h>
 
 #include "log.h"
 
-#ifdef ESP8266
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
-#include <FS.h>
-#endif
+#include "httpclient.h"
 
 extern WiFiClient client;
 
@@ -26,7 +24,6 @@ bool getFile(String url, String filename) {
 
   wifilog("[HTTP] begin...");
 
-#ifdef ESP8266
   HTTPClient http;
 
   if (false) {
@@ -36,11 +33,6 @@ bool getFile(String url, String filename) {
   } else {
     http.begin(client, url);
   }
-#else
-  HTTPClient http;
-  // Configure server and url
-  http.begin(url);
-#endif
 
   // Start connection and send HTTP header
   int httpCode = http.GET();
@@ -104,3 +96,5 @@ bool getFile(String url, String filename) {
 
   return true; // File was fetched from web
 }
+
+#endif
