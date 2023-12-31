@@ -7,7 +7,6 @@
 #ifdef ESP32
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <ESPmDNS.h>
 #elif ESP8266
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
@@ -17,7 +16,7 @@
 
 #include <LittleFS.h>
 
-#include <TimerCall.h>
+// #include <TimerCall.h>
 
 #include "_define_wifi.h"
 #include <math.h>
@@ -25,7 +24,7 @@
 #include "display.h"
 #include "httpserver.hpp"
 
-TimerCall timer = TimerCall();
+// TimerCall timer = TimerCall();
 
 int count = 0;
 
@@ -43,16 +42,33 @@ void mdns_announce() {
 }
 #endif
 
+void printMemFree() {
+  char ram[15];
+  char psram[15];
+  dtostrf(ESP.getFreeHeap(), 0, 0, ram);
+  dtostrf(ESP.getFreePsram(), 0, 0, psram);
+  mainlog("Free main heap: " + String(ram) 
+          + "bytes / Free PSRAM heap:" + String(psram) + "bytes");
+
+}
+
 void setup()
 {
-  char temp[15];
 
   Serial.begin(115200);
   delay(100);
   Serial.println("");
   Serial.println("");
   sectionlog("Start setup.");
-  mainlog("Free heap: " + String(dtostrf(ESP.getFreeHeap(), 0, 0, temp)));
+
+  // PSRAM
+  if (psramInit()) {
+    mainlog("The PSRAM is correctly initialized");
+  } else {
+    mainlog("PSRAM does not work");
+  }
+  printMemFree();
+
 
   // SPIFFS
   while (!LittleFS.begin(true)) {
@@ -60,8 +76,9 @@ void setup()
     delay(100);
   }
   mainlog("LittleFS ready");
+  printMemFree();
 
-  mainlog("Free heap: " + String(dtostrf(ESP.getFreeHeap(), 0, 0, temp)));
+
   WiFi.setHostname(MDNS_NAME);
   WiFi.softAPdisconnect(true);
   WiFi.enableAP(false);
@@ -76,39 +93,37 @@ void setup()
     if (count == 10) {
       count = 0;
       mainlog("Still waiting for WiFi connection.");
-      mainlog("Free heap: " + String(dtostrf(ESP.getFreeHeap(), 0, 0, temp)));
+      printMemFree();
       WiFi.begin(WIFI_SSID, WIFI_PASS);
     }
   }
   mainlog("WiFi connected");
-  mainlog("Free heap: " + String(dtostrf(ESP.getFreeHeap(), 0, 0, temp)));
-
-  delay(1000);
+  printMemFree();
 
   mainlog("Start display");
   setup_tft();
   draw_wifi_connecting_screen();
   mainlog("Start display done.");
-
+  printMemFree();
 
   // mDNS
-  if (!MDNS.begin(MDNS_NAME)) {
-    mdnslog(F("Error setting up MDNS responder!"));
-  } else {
-    MDNS.setInstanceName("ESP dumb-display Ver." + VER + " " + String(MDNS_NAME));
-    MDNS.addService("http", "tcp", 80);
-    mdnslog("mDNS responder started");
+  // if (!MDNS.begin(MDNS_NAME)) {
+  //   mdnslog(F("Error setting up MDNS responder!"));
+  // } else {
+  //   MDNS.setInstanceName("ESP dumb-display Ver." + VER + " " + String(MDNS_NAME));
+  //   MDNS.addService("http", "tcp", 80);
+  //   mdnslog("mDNS responder started");
 
-    mdns_announce();
-  }
+  //   mdns_announce();
+  // }
 
   // http
   setup_http_server();
 
   draw_ready_screen(WiFi.localIP().toString(), String(MDNS_NAME));
 
-  timer.add(mdns_announce, "MDNS_ANNO", 180000);
-  timer.start();
+  // timer.add(mdns_announce, "MDNS_ANNO", 180000);
+  // timer.start();
 
   sectionlog("End setup.");
   return;
@@ -140,5 +155,5 @@ void loop()
 #endif 
 
   loop_http_server();
-  timer.loop();
+  // timer.loop();
 }

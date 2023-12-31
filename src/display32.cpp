@@ -55,17 +55,15 @@ int jpegDrawCallback(JPEGDRAW *pDraw)
 String load_jpg(String path, double scale = 1.0) {
   displog("JPG decode start " + path);
 
+  uint32_t t = millis();
+
   uint16_t w = 0, h = 0;
   char path_char[path.length() + 1];
-  path.toCharArray(path_char, path.length());
+  path.toCharArray(path_char, path.length() + 1);
 
   jpegDraw(path_char, jpegDrawCallback, true /* useBigEndian */,
-           random(w * 2) - w /* x */,
-           random(h * 2) - h /* y */,
-           w /* widthLimit */, h /* heightLimit */);
-  Serial.print("Width = "); Serial.print(w); Serial.print(", height = "); Serial.println(h);
-
-  uint32_t t = millis();
+           0 /* x */, 0 /* y */,
+           gfx->width() /* widthLimit */, gfx->height() /* heightLimit */);
 
   displog("JPG decode done");
   t = millis() - t;

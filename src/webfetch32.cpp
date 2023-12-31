@@ -58,7 +58,7 @@ bool getFile(String url, String filename) {
     return false;
   }
 
-  File f = LittleFS.open(filename, "w+");
+  File f = LittleFS.open(filename, FILE_WRITE);
   if (!f) {
     wifilog("file open failed");
     return false;
