@@ -1,0 +1,45 @@
+@charset "utf-8";
+body { 
+    background-color: aliceblue;
+    line-height: 110%;
+}
+
+body.setup_done { 
+    background-color: paleturquoise;
+}
+
+body.setup_err {
+    background-color: lightsalmon;
+}
+
+span.header {
+    display: inline-block;
+    width: 6em;
+}
+
+input[type='text'],input[type='password'] {
+    width: 15em;
+}
+
+input.num {
+    width: 6em;
+}
+
+input#submit {
+    width: 200px;
+    height: 48px;
+}
+
+a.setup_again {
+    font-size: 150%;
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.notice {
+    background-color: blanchedalmond;
+    border: 2px solid black;
+    padding: 0.5em 1.5em 0.5em 1.5em;
+}
