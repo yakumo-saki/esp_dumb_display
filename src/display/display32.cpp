@@ -10,9 +10,11 @@
 #include "global.hpp"
 #include <vector>
 
-#include "display32/JpegFunc.h"
+#include "display/esp32/JpegFunc.h"
 
+#include <U8g2lib.h>
 #include <Arduino_GFX_Library.h>
+
 
 // ESP32_4827S043
 // default backlight pin, you may replace DF_GFX_BL to actual backlight pin
@@ -41,6 +43,10 @@ namespace display {
     gfx->fillScreen(BLACK);
   }
 
+  void _writeText(int x, int y, String text) {
+    gfx->setCursor(x, y);
+    gfx->printf(text.c_str());
+  }
 
   int jpegDrawCallback(JPEGDRAW *pDraw)
   {
@@ -103,20 +109,52 @@ namespace display {
 
   }
 
+  void drawWifiAPScreen(String ip, String ssid) {
+    displog("drawWifiAPScreen start.");
+    gfx->startWrite();
+    cls();
+
+    gfx->drawRect(8, 8, gfx->width() - 18, gfx->height() - 20, RGB565_PURPLE);
+    gfx->drawRect(6, 6, gfx->width() - 14, gfx->height() - 16, RGB565_GREEN);
+    gfx->drawRect(4, 4, gfx->width() - 10, gfx->height() - 12, RGB565_BLUE);
+    gfx->drawRect(2, 2, gfx->width() - 6, gfx->height() - 8, RGB565_RED);
+    gfx->drawRect(0, 0, gfx->width() - 2, gfx->height() - 4, RGB565_WHITE);
+
+    // gfx->setFont(u8g2_font_unifont_h_utf8);
+    gfx->setFont(u8g2_font_UnnamedDOSFontIV_tr);
+    gfx->setTextColor(WHITE);
+    gfx->setCursor(30, 0);
+
+    _writeText(30,30, "Welcome to setup.");
+    _writeText(30,60, "WiFi info:");
+    _writeText(30,80, "SSID: " + ssid);
+    _writeText(30,110, "Access via web browser:");
+    _writeText(30,130, "http://" + ip);
+
+    gfx->endWrite();
+
+    displog("drawWifiAPScreen done.");
+  }
+
   void drawWifiConnectingScreen() {
     displog("drawWifiConnectingScreen start.");
     gfx->startWrite();
     cls();
 
-    gfx->setCursor(0, 0);
-    gfx->setTextColor(WHITE);
+    gfx->drawRect(8, 8, gfx->width() - 18, gfx->height() - 20, RGB565_PURPLE);
+    gfx->drawRect(6, 6, gfx->width() - 14, gfx->height() - 16, RGB565_GREEN);
+    gfx->drawRect(4, 4, gfx->width() - 10, gfx->height() - 12, RGB565_BLUE);
+    gfx->drawRect(2, 2, gfx->width() - 6, gfx->height() - 8, RGB565_RED);
+    gfx->drawRect(0, 0, gfx->width() - 2, gfx->height() - 4, RGB565_WHITE);
 
-    gfx->printf("Welcome.\n");
-    gfx->printf("Connecting to wifi.\n");
-    gfx->printf("Welcome.\n");
-    gfx->printf("Connecting to wifi.\n");
-    gfx->printf("Welcome.\n");
-    gfx->printf("Connecting to wifi.\n");
+    // gfx->setFont(u8g2_font_unifont_h_utf8);
+    gfx->setFont(u8g2_font_UnnamedDOSFontIV_tr);
+    gfx->setTextColor(WHITE);
+    gfx->setCursor(30, 0);
+
+    _writeText(30,30, "Welcome.");
+    _writeText(30,50, "Connecting to wifi.");
+    _writeText(30,70, "Please wait.");
 
     gfx->endWrite();
 

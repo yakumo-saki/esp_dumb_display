@@ -10,4 +10,6 @@ namespace display {
   void setDisplayBrightness(int brightness);
   void drawReadyScreen(String ip, String mdns);
   void drawWifiConnectingScreen();
+  void drawWifiAPScreen(String ip, String ssid);
+
 }

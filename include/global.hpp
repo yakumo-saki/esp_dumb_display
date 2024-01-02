@@ -1,6 +1,14 @@
-#ifdef ESP32
 #include <Arduino.h>
-#include <WiFi.h>
 
-extern WiFiClient client;
-#endif
+namespace global {
+  extern const String productShort;
+  extern const String product;
+  extern const String ver;
+  extern const String minorVer;
+  extern const String productLong;
+
+  extern const String SETTING_ID;
+
+  extern const bool DEBUG_BUILD;
+
+}

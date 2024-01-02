@@ -1,6 +1,7 @@
 #ifdef ESP32
 
 #include <Arduino.h>
+#include <WiFi.h>
 
 #include <LittleFS.h>
 
@@ -11,6 +12,8 @@
 
 #include "wifiutil.hpp"
 #include "httpclient.hpp"
+
+WiFiClient client;
 
 // Fetch a file from the URL given and save it in LittleFS
 // Return 1 if a web fetch was needed or 0 if file already exists

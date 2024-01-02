@@ -27,7 +27,6 @@
 
 bool normal_mode = false;
 
-
 void setup() {
 
   Serial.begin(115200);

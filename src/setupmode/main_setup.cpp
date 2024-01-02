@@ -21,6 +21,25 @@ namespace setupMode {
   TimerCall timer;
 
   /**
+   * WiFi AP モードを起動する
+   */
+  void start_wifi_access_point() {
+    byte mac[6];
+    WiFi.macAddress(mac);
+
+    // SSID は macaddress をSUFFIXする。前半はespressifのIDなので後半3つだけ
+    String ssid = "_SETUP_" + global::productShort;
+    for (int i = 3; i < 6; i++) {
+      ssid += String(mac[i], HEX);
+    }
+
+    wifilog("SSID: " + ssid);
+
+    WiFi.softAP(ssid.c_str());
+    wifilog("WiFi AP Started. SSID=" + ssid);
+  }
+
+  /**
    * 初期化
    */
   void setup() {
@@ -38,7 +57,10 @@ namespace setupMode {
     // initialize display
     display::setup();
     display::drawWifiConnectingScreen();
-    // disp_setup_startup_screen(WiFi.softAPIP().toString(), WiFi.softAPSSID());
+    delay(1000);
+
+    start_wifi_access_point();
+    display::drawWifiAPScreen(WiFi.softAPIP().toString(), WiFi.softAPSSID());
 
     timer.add(printMemFree, "MEMFREE", 60000);
     timer.start();
