@@ -1,6 +1,9 @@
+#include <ArduinoJson.h>
 #include "config/AppConfig.hpp"
 
 namespace config {
+
+  extern const String MSG_OK;
 
   AppConfig* getConfig();
 
@@ -14,4 +17,8 @@ namespace config {
   bool saveConfig();
   bool needConfigMigrate();
   bool migrateConfig();
+  String validate(String key,String value);
+
+
+  DynamicJsonDocument serializeConfig();
 }

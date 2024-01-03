@@ -6,12 +6,13 @@
 #include "log.h"
 
 #include "config_saveload.hpp"
+#include "config_validate.hpp"
 
 namespace config {
 
   static AppConfig* _instance = nullptr;
 
-  const bool DEBUG_BUILD = false;
+  const bool DEBUG_BUILD = true;
 
   const String FLAG_FILEPATH = "/boot_ok.txt";
   const String CONFIG_FILEPATH = "/config.json";
@@ -114,7 +115,16 @@ namespace config {
     return true;
   }
 
-  String serializeConfig() {
+  DynamicJsonDocument serializeConfig() {
+
+    DynamicJsonDocument doc(CONF_JSON_SIZE);
+    _saveConfigToJson(getConfig(), &doc);
+    doc.garbageCollect();
+
+    return doc;
+  }
+
+  String serializeConfigString() {
 
     DynamicJsonDocument doc(CONF_JSON_SIZE);
     _saveConfigToJson(getConfig(), &doc);
@@ -124,7 +134,10 @@ namespace config {
       serializeJsonPretty(doc, Serial);
     }
 
-    return "NOT IMPL";
+    String json;
+    serializeJson(doc, json);
+
+    return json;
   }
 
 }

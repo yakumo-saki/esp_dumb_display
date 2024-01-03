@@ -3,12 +3,15 @@
 #include "log.h"
 #include "const.h"
 
-#include "config.hpp"
+#include "configApi.hpp"
 #include "display.hpp"
 #include "webfetch.hpp"
 
 #include "httpCore.hpp"
 #include "httpserver.hpp"
+
+#include "static.hpp"
+#include "status.hpp"
 
 
 namespace httpServer {
@@ -89,7 +92,6 @@ namespace httpServer {
     server.send(200, "application/json", json);
   }
 
-
   void handle_get() {
     String json = create_json(true, "GET_ROOT", "This is ESP DUMB DISPLAY ver" + VER);
     server.send(200, "application/json", json);
@@ -139,16 +141,25 @@ namespace httpServer {
     server.send(200, "application/json", json);
   }
 
+  void setupWebConfig() {
+    server.on("/api/v1/config", HTTP_GET, handleConfigGet);
+    server.on("/api/v1/config", HTTP_POST, handleConfigSet);
+
+    server.on("/static/config.js", HTTP_GET, handleStatic_configjs);
+    server.on("/static/style.css", HTTP_GET, handleStatic_stylecss);
+    server.on("/", HTTP_GET, handleSetupGet);
+  }
+
   /**
    * 初期化 (SETUP MODE)
    */
   void setupSetupMode() {
     httplog(F("HTTP web server (setup mode) initializing"));
-    server.on("/api/stat", HTTP_GET, handle_config_get);
-    server.on("/api/config", HTTP_GET, handle_config_get);
-    server.on("/api/config", HTTP_POST, handle_config_set);
-    server.on("/", HTTP_GET, handle_setup_get);
-    server.on("/", HTTP_POST, handle_setup_post);
+    server.on("/api/status", HTTP_GET, handleStatusGet);
+
+    // config web
+    setupWebConfig();
+
     server.begin();
     httplog(F("HTTP web server (setup mode) initialized"));
   }
@@ -162,11 +173,14 @@ namespace httpServer {
     server.on("/api/beep", HTTP_POST, handle_beep);
     server.on("/api/png", HTTP_POST, handle_update_png);
     server.on("/api/jpg", HTTP_POST, handle_update_jpg);
-    server.on("/", HTTP_GET, handle_get);
-    server.on("/api/config", HTTP_GET, handle_config_get);
-    server.on("/api/config", HTTP_POST, handle_config_set);
-    server.on("/setup", HTTP_GET, handle_setup_get);
-    server.on("/setup", HTTP_POST, handle_setup_post);
+
+    server.on("/api/status", HTTP_GET, handleStatusGet);
+
+     // config web
+    setupWebConfig();
+
+    server.enableCORS(true);
+
     server.begin();
     httplog(F("HTTP web server initialized"));
   }

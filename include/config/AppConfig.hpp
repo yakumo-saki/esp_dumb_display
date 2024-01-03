@@ -32,6 +32,3 @@ class AppConfig {
 
     // 公開データメンバーと公開メンバー関数
 };
-
-void delete_flagfile();
-void create_flagfile();

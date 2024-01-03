@@ -69,6 +69,7 @@ namespace setupMode {
     timer.add(printMemFree, "MEMFREE", 60000);
     timer.start();
 
+    global::operationMode = "SETUP";
     mainlog(F("Setup complete. Setup mode ready."));
   }
 

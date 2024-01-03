@@ -6,7 +6,7 @@ const DEBUG_API_HOST = "10.1.0.110"; // デバッグ時、APIを投げる先
 const CONTENT_JSON = "application/json";
 const CONTENT_TEXT = "text/plain";
 const CONTENT_FORM = "application/x-www-form-urlencoded"
-const IGNORE_KEY = ["settingId"]
+const IGNORE_KEY = ["settingId", "configId"]
 
 let SETUP_MODE = false;
 
@@ -85,7 +85,7 @@ function replaceVersion(replaceName, value) {
  * ページロード時にEBXのバージョン等を置き換える
  */
 async function setPageValues() {
-    const res = await httpGet("/ping");
+    const res = await httpGet("/api/status");
     console.log(res);
 
     const json = await res.json();
@@ -110,28 +110,9 @@ async function showSetupModeOnly() {
  */
 function setConfigValuesToPage(configMap) {
     configMap.forEach((v, k) => {
-
-        // console.log("key", k, "val", v);
-
-        const el = document.querySelector(`input[name="${k}"]`);
-        if (el == null) {
-            console.log(`key ${k} is not found on document.`);
-            return;
-        }
-
-        if (el.type === "radio") {
-            const radio = document.querySelector(
-                `input[name="${k}"][value="${v}"]`
-            );
-            if (radio == null) {
-                console.log(
-                    `radio button name=${k} value=${v} is not found on document.`
-                );
-            }
-            radio.checked = true;
-        } else {
-            // input type=text,password,number
-            el.value = v;
+        const ret = setInputValue(k, v);
+        if (!ret) {
+            console.error("Set value failed key=",k , "value=", v);
         }
     });
 }
@@ -156,17 +137,41 @@ function setInputValue(key, value) {
         }
 
         elements[0].checked = true;
-        return;
+        return true;
     } else if (els.length == 1) {
         els[0].value = value;
         return true;
-    } else if (els.length == 0) {
-        console.log(key, "element not found");
-        return false;
     }
 
-    return true;
+    const selectElements = document.querySelectorAll(`select[name='${key}']`);
+    if (selectElements.length > 0) {
+        // select
+        const elem = selectElements[0];
+        const options = elem.options; // multi-selectがあるのでselectedOption"s"
+        
+        let found = false;
+        for (let i = 0; i < options.length; i++) {
+            const opt = options[i];
+            if (opt.value == value) {
+                opt.selected = true;
+                found = true;
+                break;
+            } else {
+                opt.selected = false;
+            }
+        }
+
+        if (!found) {
+            console.error("Select element found, but value not found. ${key} ${value}");
+        }
+        
+        return found;
+    }
+
+    console.log(key, "element not found");
+    return false;
 }
+
 
 
 /**
@@ -183,11 +188,16 @@ function getInputValue(key) {
         return el.value;
     } else if (els.length == 1) {
         return els[0].value;
-    } else if (els.length == 0) {
-        console.log(key, "element not found");
-        return null;
     }
 
+    const opts = document.querySelectorAll(`select[name='${key}'] > option:checked`);
+    if (opts.length == 0) {
+        console.error("Select option is not selected.", key);
+    } else {
+        return opts[0].value;
+    }
+
+    console.log(key, "element not found");
     return "INVALID";
 }
 

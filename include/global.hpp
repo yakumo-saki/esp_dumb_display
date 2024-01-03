@@ -10,5 +10,6 @@ namespace global {
   extern const String SETTING_ID;
 
   extern const bool DEBUG_BUILD;
+  extern String operationMode;
 
 }

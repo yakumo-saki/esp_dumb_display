@@ -20,6 +20,7 @@
 
 #include "job/printMemFree.hpp"
 
+#include "global.hpp"
 #include "config/config.hpp"
 #include "display.hpp"
 #include "httpserver.hpp"
@@ -112,6 +113,7 @@ namespace normalMode {
     timer.add(mdns_announce, "MDNS_ANNO", 300000);
     timer.start();
 
+    global::operationMode = "NORMAL";
     mainlog(F("Setup complete. Normal mode ready."));
     sectionlog("End setup.");
     return;

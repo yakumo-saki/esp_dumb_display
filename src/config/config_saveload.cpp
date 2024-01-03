@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
+#include "log.h"
 #include "config/AppConfig.hpp"
 
 namespace config {
@@ -18,15 +19,22 @@ namespace config {
     if (doc.containsKey("brightness")) {
       cfg->brightness = doc["brightness"].as<int>();
     }
+    if (doc.containsKey("mDNSName")) {
+      cfg->mDNSName = doc["mDNSName"].as<String>();
+    }
     if (doc.containsKey("rotation")) {
       cfg->rotation = doc["rotation"].as<int>();
     }
 
   }
 
-  void _saveConfigToJson(AppConfig *cfg, DynamicJsonDocument *doc) {
-
-
+  void _saveConfigToJson(AppConfig *cfg, DynamicJsonDocument *pdoc) {
+    (*pdoc)["configId"] = cfg->configId;
+    (*pdoc)["ssid"] = cfg->ssid;
+    (*pdoc)["password"] = cfg->password;
+    (*pdoc)["brightness"] = cfg->brightness;
+    (*pdoc)["mDNSName"] = cfg->mDNSName;
+    (*pdoc)["rotation"] = cfg->rotation;
   }
 
 }

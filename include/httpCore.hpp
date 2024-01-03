@@ -12,5 +12,6 @@ typedef WebServer HTTPWEBSERVER;
 #endif
 
 namespace httpServer {
+
   extern HTTPWEBSERVER server;
 } // namespace httpCore

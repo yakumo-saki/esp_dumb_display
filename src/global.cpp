@@ -16,7 +16,7 @@ namespace global {
   // note: Also referenced by create_release.sh
   extern const String product = "Dumb-Display";
   extern const String ver = "0";      // Major
-  extern const String minorVer = "91";  // Minor
+  extern const String minorVer = "92";  // Minor
   extern const String verLong = " Ver." + ver + "." + minorVer;
 
   // Setting version (version number when settings changed)
@@ -24,4 +24,7 @@ namespace global {
 
   // Dumb-Display Ver.53.0
   extern const String productLong = product + " " + (DEBUG_BUILD ? " Dev." + ver + "." + minorVer : verLong);
+
+  String operationMode = "INVALID";
+
 }
