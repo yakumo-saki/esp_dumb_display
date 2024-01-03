@@ -59,8 +59,12 @@ namespace setupMode {
     display::drawWifiConnectingScreen();
     delay(1000);
 
+    // Start WiFi AP mode
     start_wifi_access_point();
     display::drawWifiAPScreen(WiFi.softAPIP().toString(), WiFi.softAPSSID());
+
+    // http server
+    httpServer::setupSetupMode();
 
     timer.add(printMemFree, "MEMFREE", 60000);
     timer.start();

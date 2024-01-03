@@ -140,17 +140,17 @@ namespace httpServer {
   }
 
   /**
-   * 初期化
+   * 初期化 (SETUP MODE)
    */
   void setupSetupMode() {
-    httplog(F("HTTP web server initializing"));
-    server.on("/", HTTP_GET, handle_get);
+    httplog(F("HTTP web server (setup mode) initializing"));
+    server.on("/api/stat", HTTP_GET, handle_config_get);
     server.on("/api/config", HTTP_GET, handle_config_get);
     server.on("/api/config", HTTP_POST, handle_config_set);
-    server.on("/setup", HTTP_GET, handle_setup_get);
-    server.on("/setup", HTTP_POST, handle_setup_post);
+    server.on("/", HTTP_GET, handle_setup_get);
+    server.on("/", HTTP_POST, handle_setup_post);
     server.begin();
-    httplog(F("HTTP web server initialized"));
+    httplog(F("HTTP web server (setup mode) initialized"));
   }
 
   /**
