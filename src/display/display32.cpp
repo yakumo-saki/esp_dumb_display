@@ -61,20 +61,23 @@ namespace display {
    */
   String loadJpg(String path, double scale = 1.0) {
     displog("JPG decode start " + path);
+    gfx->startWrite();
+    cls();
 
     uint32_t t = millis();
 
     uint16_t w = 0, h = 0;
-    char path_char[path.length() + 1];
-    path.toCharArray(path_char, path.length() + 1);
 
-    jpegDraw(path_char, jpegDrawCallback, true /* useBigEndian */,
+    jpegDraw(path.c_str(), jpegDrawCallback, true /* useBigEndian */,
             0 /* x */, 0 /* y */,
             gfx->width() /* widthLimit */, gfx->height() /* heightLimit */);
 
     displog("JPG decode done");
     t = millis() - t;
     displog("JPG decode & draw took " + String(t) + "ms");
+
+    gfx->endWrite();
+
     return RET_OK;
   }
 
@@ -83,27 +86,17 @@ namespace display {
     gfx->startWrite();
     cls();
 
-    gfx->setCursor(0, 0);
+    gfx->drawRect(0, 0, gfx->width() - 3, gfx->height() - 5, RGB565_WHITE);
+    gfx->drawRect(1, 1, gfx->width() - 4, gfx->height() - 6, RGB565_WHITE);
+    gfx->drawRect(2, 2, gfx->width() - 5, gfx->height() - 7, RGB565_WHITE);
+
+    gfx->setFont(u8g2_font_UnnamedDOSFontIV_tr);
     gfx->setTextColor(WHITE);
 
-    gfx->printf("WiFi connection established.\n");
-    gfx->printf("Waiting for your order.\n");
-    gfx->printf(ip.c_str());
-    gfx->printf("\n");
-    gfx->printf(mdns.c_str());
-    gfx->printf("\n");
-
-    gfx->setCursor(30, 0);
-    gfx->setTextColor(WHITE);
-
-    gfx->printf("WiFi connection established.\n");
-    gfx->printf("Waiting for your order.\n");
-    gfx->printf(ip.c_str());
-    gfx->printf("\n");
-    gfx->printf(mdns.c_str());
-    gfx->printf("\n");
-
-
+    _writeText(30, 30, "WiFi connection established.");
+    _writeText(30, 50, "Waiting for your order.");
+    _writeText(30, 80, ip.c_str());
+    _writeText(30, 100, mdns.c_str());
 
     gfx->endWrite();
 
@@ -123,7 +116,6 @@ namespace display {
     // gfx->setFont(u8g2_font_unifont_h_utf8);
     gfx->setFont(u8g2_font_UnnamedDOSFontIV_tr);
     gfx->setTextColor(WHITE);
-    gfx->setCursor(30, 0);
 
     _writeText(30,30, "Welcome to setup.");
     _writeText(30,60, "WiFi info:");
