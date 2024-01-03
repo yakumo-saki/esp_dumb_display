@@ -6,7 +6,8 @@
 
 namespace config {
 
-  void _loadJsonToConfig(DynamicJsonDocument doc, AppConfig *cfg) {
+  // Configファイルの初期ロード、Configのアップデート時に使用される
+  void mergeJsonToConfig(DynamicJsonDocument doc, AppConfig *cfg) {
     if (doc.containsKey("configId")) {
       cfg->configId = doc["configId"].as<String>();
     }

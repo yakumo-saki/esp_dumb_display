@@ -15,10 +15,11 @@ namespace config {
   // config
   bool readConfig();
   bool saveConfig();
+  void mergeJsonToConfig(DynamicJsonDocument doc, AppConfig *cfg);
+
   bool needConfigMigrate();
   bool migrateConfig();
   String validate(String key,String value);
-
 
   DynamicJsonDocument serializeConfig();
 }

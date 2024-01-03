@@ -4,6 +4,7 @@ namespace httpServer {
 
     void handleConfigGet();
     void handleConfigSet();
+    void handleConfigCommit();
     void handleSetupGet();
 
 }

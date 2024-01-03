@@ -4,6 +4,6 @@
 #include "config/AppConfig.hpp"
 
 namespace config {
-  void _loadJsonToConfig(DynamicJsonDocument doc, AppConfig *cfg);
+  void mergeJsonToConfig(DynamicJsonDocument doc, AppConfig *cfg);
   void _saveConfigToJson(AppConfig *cfg, DynamicJsonDocument *doc);
 }

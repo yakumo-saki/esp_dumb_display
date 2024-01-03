@@ -91,7 +91,7 @@ namespace config {
       return false;
     }
 
-    _loadJsonToConfig(doc, getConfig());
+    mergeJsonToConfig(doc, getConfig());
     cfglog("Config read success.");
     return true;
   }
@@ -111,6 +111,8 @@ namespace config {
     f.close();
 
     cfglog("Config file wrote " + String(size) + " bytes.");
+
+    config::createFlagfile();
 
     return true;
   }

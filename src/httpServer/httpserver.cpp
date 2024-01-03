@@ -144,6 +144,7 @@ namespace httpServer {
   void setupWebConfig() {
     server.on("/api/v1/config", HTTP_GET, handleConfigGet);
     server.on("/api/v1/config", HTTP_POST, handleConfigSet);
+    server.on("/api/v1/config/commit", HTTP_POST, handleConfigCommit );
 
     server.on("/static/config.js", HTTP_GET, handleStatic_configjs);
     server.on("/static/style.css", HTTP_GET, handleStatic_stylecss);

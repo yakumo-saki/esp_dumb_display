@@ -52,8 +52,11 @@ namespace normalMode {
     if (config::readConfig()) {
       mainlog("Config load successful.");
     } else {
-      // failedしているが、デフォルト値は入っているのでOK.
+      // あんまりOKではないのでフラグファイルを削除して再起動
       mainlog("Config load failed.");
+      config::deleteFlagfile();
+      ESP.restart();
+      delay(1000000);
     }
 
     // PSRAM
@@ -65,6 +68,16 @@ namespace normalMode {
     printMemFree();
 
     auto cfg = config::getConfig();
+
+    mainlog("Start display");
+    display::setup();
+    display::drawWifiConnectingScreen();
+    mainlog("Start display done.");
+    printMemFree();
+
+    // Config クリティカルセクション
+    sectionlog("Config critical section start");
+    config::deleteFlagfile();
 
     WiFi.setHostname(cfg->mDNSName.c_str());
     WiFi.softAPdisconnect(true);
@@ -87,11 +100,9 @@ namespace normalMode {
     mainlog("WiFi connected");
     printMemFree();
 
-    mainlog("Start display");
-    display::setup();
-    display::drawWifiConnectingScreen();
-    mainlog("Start display done.");
-    printMemFree();
+    config::createFlagfile();
+    sectionlog("Config critical section end");
+    // クリティカルセクションここまで
 
     // mDNS
     if (!MDNS.begin(cfg->mDNSName)) {

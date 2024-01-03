@@ -4,6 +4,7 @@
 #include "const.h"
 #include "httpCore.hpp"
 
+#include "global.hpp"
 #include "config/config.hpp"
 
 #include "log.h"
@@ -29,47 +30,6 @@ namespace httpServer {
     server.send(200, MimeType::HTML, CONFIG_HTML);
   }
 
-  void _get_config() {
-
-    sendHttpHeader(MimeType::JSON);
-
-    String keys = server.arg("key");
-
-    std::vector<String> keyArray = stringSplit(keys, ",");
-
-    DynamicJsonDocument json = config::serializeConfig();
-    json["command"] = "CONFIG_GET";
-    json["success"] = true;
-
-    String jsonStr;
-    serializeJson(json, jsonStr);
-    server.sendContent(jsonStr);
-  }
-
-  void _commit_config() {
-
-    DynamicJsonDocument json(100);
-
-    json["command"] = "CONFIG_COMMIT";
-    json["success"] = true;
-    config::saveConfig();
-
-    sendHttpHeader(MimeType::JSON);
-
-    String jsonStr;
-    serializeJson(json, jsonStr);
-    server.sendContent(jsonStr);
-  }
-
-  void _backup_config() {
-
-    sendHttpHeader(MimeType::TEXT);
-
-    // String ret = http_api_backup_config();
-
-    server.sendContent("NOT IMPL");
-  }
-
   // APIで飛んできた値で設定変更（バリデーション＆反映）
   String updateConfig() {
 
@@ -86,6 +46,7 @@ namespace httpServer {
       apilog("key=" + key + " value=" + value);
     }
 
+    // Validation
     for (int i = 0; i < server.args(); i++) {
       String key = server.argName(i);
       String value = server.arg(i);
@@ -100,6 +61,27 @@ namespace httpServer {
       }
     }
 
+    // update config
+    if (msgs.size() == 0) {
+      DynamicJsonDocument cfgUpdate(4000);
+      cfgUpdate["configId"] = global::SETTING_ID;
+
+      for (int i = 0; i < server.args(); i++) {
+        String key = server.argName(i);
+        String value = server.arg(i);
+
+        cfgUpdate[key] = value;
+      }
+
+      // wifi passwordが空なら更新しない
+      if (cfgUpdate["password"] == "") {
+        cfgUpdate.remove("password");
+      }
+
+      config::mergeJsonToConfig(cfgUpdate, config::getConfig());
+      cfgUpdate.clear();
+    }
+
     // ここ自体は大した容量を必要としないのでこれで十分。ESP8266ではメモリがカツカツなので無駄に増やさないこと
     DynamicJsonDocument json(1000);
     json["command"] = "CONFIG_SET";
@@ -107,7 +89,7 @@ namespace httpServer {
     json["msgs"] = msgs;
 
     if (failed) {
-      json["message"] = "Some error detected. Check msgs.";
+      json["message"] = "Error detected. Check msgs. Settings not changed.";
     } else {
       json["message"] = "Don't forget calling config/commit. API";
     }
@@ -146,6 +128,23 @@ namespace httpServer {
     apilog(jsonStr);
     server.sendContent(jsonStr);
     apilog("handleConfigGet end");
+  }
+
+  void handleConfigCommit() {
+    apilog("handleConfigCommit Start");
+    config::saveConfig();
+
+    DynamicJsonDocument doc(1024);
+    auto cfg = config::serializeConfig();
+    doc["success"] = true;
+
+    String jsonStr;
+    serializeJson(doc, jsonStr);
+
+    sendHttpHeader(MimeType::JSON);
+    server.sendContent(jsonStr);
+
+    apilog("handleConfigCommit end");
   }
 
 }
